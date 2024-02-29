@@ -11,7 +11,7 @@ from users.serializers import UserProfileSerializer, UserWithoutCodeSerializer, 
 from users.services import generate_code, send_otp
 from rest_framework.permissions import AllowAny
 from rest_framework import generics
-from rest_framework.renderers import TemplateHTMLRenderer
+import twilio
 
 
 class LogoutAPIView(APIView):
@@ -19,7 +19,7 @@ class LogoutAPIView(APIView):
 
     def get(self, request):
         request.user.auth_token.delete()
-        return Response(status=status.HTTP_200_OK)
+        return Response({'message': 'Вы успешно вышли из аккаунта'}, status=status.HTTP_200_OK)
 
 
 class LoginAPIView(APIView):
@@ -47,9 +47,14 @@ class LoginAPIView(APIView):
             user.verify_code = verify_code
             user.save()
 
-            send_otp(verify_code, phone)
+            try:
+                sid = send_otp(verify_code, phone)
 
-            return Response({'message': 'На ваш телефон был отправлен код авторизации'}, status=status.HTTP_200_OK)
+            except twilio.base.exceptions.TwilioRestException as e:
+                return Response({'message': e.msg}, status=status.HTTP_400_BAD_REQUEST)
+
+            else:
+                return Response({'message': 'На ваш телефон был отправлен код авторизации'}, status=status.HTTP_200_OK)
 
 
 class ValidateAPIView(APIView):

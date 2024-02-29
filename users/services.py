@@ -21,5 +21,4 @@ def send_otp(code, phone):
         to='+7'+phone,
     )
 
-    print(message.sid)
-    print(message.status)
+    return message.sid
