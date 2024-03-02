@@ -29,17 +29,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'phone', 'referral_code', 'invited_code', 'invited_users')
 
 
-class UserWithoutCodeSerializer(serializers.ModelSerializer):
-    """Сериализатор для пользователей без кода приглашения"""
+class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для редактирования профиля пользователя"""
 
     class Meta:
         model = User
         fields = ('invited_code', 'avatar',)
 
-
-class UserWithCodeSerializer(serializers.ModelSerializer):
-    """Сериализатор для пользователей с кодом приглашения"""
-
-    class Meta:
-        model = User
-        fields = ('avatar',)

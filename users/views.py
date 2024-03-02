@@ -6,8 +6,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from drf_yasg.utils import swagger_auto_schema
 from users.permissions import IsOwner
-from users.serializers import UserProfileSerializer, UserWithoutCodeSerializer, UserWithCodeSerializer, \
-    UserLoginSerializer, UserValidateSerializer
+from users.serializers import UserProfileSerializer, UserLoginSerializer, UserValidateSerializer, UserSerializer
 from users.services import generate_code, send_otp
 from rest_framework.permissions import AllowAny
 from rest_framework import generics
@@ -32,7 +31,7 @@ class LoginAPIView(APIView):
         phone = str(request.data.get('phone', ''))
 
         # Валидация на коректность номера телефона
-        if len(phone) < 10 or len(phone) > 10 or phone.isdigit() is False:
+        if len(phone) != 10 or phone.isdigit() is False:
             return Response({'message': 'Номер телефона должен содержать 10 цифр, начиная с 9'},
                             status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -93,10 +92,16 @@ class UserUpdateAPIView(generics.UpdateAPIView):
     """Редактирования профиля пользователя"""
     queryset = User.objects.all()
     permission_classes = [IsOwner]
+    serializer_class = UserSerializer
 
     def perform_update(self, serializer):
         """Проверка реферального кода и присваивание пригласивший пользователь"""
-        user = serializer.save()
+
+        user = User.objects.get(pk=self.kwargs['pk'])
+        if user.invited_code:
+            raise APIException('Вы уже вводили код')
+
+        instance = serializer.save()
         invited_code = self.request.data['invited_code']
 
         try:
@@ -104,12 +109,6 @@ class UserUpdateAPIView(generics.UpdateAPIView):
         except User.DoesNotExist:
             raise APIException('Неверный код')
         else:
-            user.invited_by = inviting_user
-            user.invited_code = invited_code
-            user.save()
-
-    def get_serializer_class(self):
-        """Если пользователь уже ввел инвайт код, выбирается сериализатор без возможности редактирования кода"""
-        if self.request.user.invited_code is None:
-            return UserWithoutCodeSerializer
-        return UserWithCodeSerializer
+            instance.invited_by = inviting_user
+            instance.invited_code = invited_code
+            instance.save()
