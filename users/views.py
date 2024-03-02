@@ -102,14 +102,16 @@ class UserUpdateAPIView(generics.UpdateAPIView):
         if user.invited_code:
             raise APIException('Вы уже вводили код')
 
-        instance = serializer.save()
         invited_code = self.request.data['invited_code']
 
         try:
             inviting_user = User.objects.get(referral_code=invited_code)
+
         except User.DoesNotExist:
             raise APIException('Неверный код')
+
         else:
+            instance = serializer.save()
             instance.invited_by = inviting_user
             instance.invited_code = invited_code
             instance.save()
