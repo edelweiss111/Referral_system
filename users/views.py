@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from drf_yasg.utils import swagger_auto_schema
 from users.permissions import IsOwner
-from users.serializers import UserProfileSerializer, UserLoginSerializer, UserValidateSerializer, UserSerializer
+from users.serializers import UserProfileSerializer, UserLoginSerializer, UserValidateSerializer, UserUpdateSerializer
 from users.services import generate_code, send_otp
 from rest_framework.permissions import AllowAny
 from rest_framework import generics
@@ -93,7 +93,7 @@ class UserUpdateAPIView(generics.UpdateAPIView):
     """Редактирования профиля пользователя"""
     queryset = User.objects.all()
     permission_classes = [IsOwner]
-    serializer_class = UserSerializer
+    serializer_class = UserUpdateSerializer
 
     def perform_update(self, serializer):
         """Проверка реферального кода и присваивание пригласивший пользователь"""

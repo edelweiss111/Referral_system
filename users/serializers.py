@@ -29,7 +29,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ('id', 'phone', 'referral_code', 'invited_code', 'invited_users')
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserUpdateSerializer(serializers.ModelSerializer):
     """Сериализатор для редактирования профиля пользователя"""
 
     class Meta:
