@@ -47,6 +47,7 @@ class LoginAPIView(APIView):
             user.verify_code = verify_code
             user.save()
 
+            # Интеграция с сервисом рассылки сообщений Twilio
             try:
                 sid = send_otp(verify_code, phone)
 
